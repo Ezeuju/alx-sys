@@ -1,11 +1,7 @@
-#!/bin/bash
-
-# Install Nginx
-apt-get update
-apt-get install -y nginx
-
-# Configure Nginx
-echo "Hello World!" | tee /var/www/html/index.html
-
-# Restart Nginx
-/etc/init.d/nginx restart
+#!/usr/bin/env bash
+# This script installs and configures an nginx web server
+sudo apt-get update
+sudo apt-get -y install nginx
+sudo chown -R "$USER:$USER" /var/www
+echo 'Hello World!' > /var/www/html/index.html
+sudo service nginx restart
