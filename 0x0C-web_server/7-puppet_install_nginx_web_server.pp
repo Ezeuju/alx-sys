@@ -1,26 +1,50 @@
-# Script to install nginx using puppet
+# File: 7-puppet_install_nginx_web_server.pp
 
-package {'nginx':
-  ensure => 'present',
+# Install Nginx package
+package { 'nginx':
+  ensure => installed,
 }
 
-exec {'install':
-  command  => 'sudo apt-get update ; sudo apt-get -y install nginx',
-  provider => shell,
+# Configure Nginx server
+file { '/etc/nginx/sites-available/default':
+  ensure  => present,
+  owner   => 'root',
+  group   => 'root',
+  content => "
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
 
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location /redirect_me {
+        return 301 http://www.example.com;
+    }
+}
+",
+  notify  => Service['nginx'],
 }
 
-exec {'Hello':
-  command  => 'echo "Hello World!" | sudo tee /var/www/html/index.html',
-  provider => shell,
+# Create the HTML file with the desired content
+file { '/var/www/html/index.html':
+  ensure  => present,
+  owner   => 'root',
+  group   => 'root',
+  content => '<h1>Hello World!</h1>',
 }
 
-exec {'sudo sed -i "s/listen 80 default_server;/listen 80 default_server;\\n\\tlocation \/redirect_me {\\n\\t\\treturn 301 https:\/\/blog.ehoneahobed.com\/;\\n\\t}/" /etc/nginx/sites-available/default':
-  provider => shell,
+# Start and enable the Nginx service
+service { 'nginx':
+  ensure    => running,
+  enable    => true,
+  hasstatus => true,
+  hasrestart => true,
 }
 
-exec {'run':
-  command  => 'sudo service nginx restart',
-  provider => shell,
-}[A[A[A[A[A[A[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Csofttech[C[C[C[h[C[C[C[C[
-[D[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C.com[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[C
